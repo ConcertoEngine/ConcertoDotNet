@@ -32,7 +32,7 @@ namespace Concerto::DotNet
 		}
 
 		/**
-		 * @brief Invoke a function from the assembly
+		 * @brief Invoke a function from the assembly with a return value
 		 * @tparam T The function return type
 		 * @param functionName The name of the function to invoke
 		 * @param args The arguments to pass to the function
@@ -50,6 +50,21 @@ namespace Concerto::DotNet
 				return;
 			}
 			else return functionPointer(std::forward<Args>(args)...);
+		}
+
+		/**
+		 * @brief Invoke a function from the assembly, without a return value
+		 * @param functionName The name of the function to invoke
+		 * @param args The arguments to pass to the function
+		 * @return The return value of the function signature
+		 * @info The first call to this function (with the same arguments and return value) may be slower than
+		 * subsequent calls, because the function is retrieved from the assembly
+		 */
+		template< typename ...Args>
+		void Invoke(const std::string& functionName, Args&& ...args)
+		{
+			auto* functionPointer = GetFunctionPointer<void(Args...)>(functionName);
+			functionPointer(std::forward<Args>(args)...);
 		}
 	 private:
 
@@ -83,8 +98,8 @@ namespace Concerto::DotNet
 		T* GetFunctionPointerFromAssembly(const std::string& functionName)
 		{
 			std::string dotnetType = _assemblyName + ".Lib, " + _assemblyName;
-			std::wstring wdotnetType(dotnetType.begin(), dotnetType.end());
-			std::wstring wfunctionName(functionName.begin(), functionName.end());
+			std::wstring wdotnetType(dotnetType.begin(), dotnetType.end()); //TODO: cross platform support
+			std::wstring wfunctionName(functionName.begin(), functionName.end()); //TODO: cross platform support
 			T* functionPointer = nullptr;
 			std::filesystem::path path = std::filesystem::current_path() / _assemblyPath;
 			int rc = _load_assembly_and_get_function_pointer(
@@ -96,7 +111,7 @@ namespace Concerto::DotNet
 				(void**)&functionPointer);
 			if (rc != 0)
 				throw std::runtime_error("Failed to load function pointer : '" + functionName + "', error code : " +
-										 std::to_string(rc) );
+					std::to_string(rc));
 			return functionPointer;
 		}
 
