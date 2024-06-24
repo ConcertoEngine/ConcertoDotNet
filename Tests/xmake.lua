@@ -1,0 +1,13 @@
+target("ConcertoDotNetTests")
+    set_kind("binary")
+    set_languages("cxx20")
+    set_warnings("all")
+    add_deps("ConcertoDotNet")
+    add_packages("gtest")
+    add_files("*.cpp")
+    after_build(function(target)
+        print("Copying resources...")
+        local binaryPath = "$(buildir)/$(plat)/$(arch)/$(mode)"
+        os.cp("Assets/**", binaryPath)
+        print("Copying resources... Done !")
+    end)

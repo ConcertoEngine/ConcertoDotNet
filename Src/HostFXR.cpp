@@ -14,12 +14,14 @@
 
 namespace Concerto::DotNet
 {
-	HostFXR::HostFXR(std::string path, std::string dotnetRuntimeConfigPath)
-		: _path(std::move(path)), _hostfxrHandle(nullptr), _dotnetRuntimeConfigPath(std::move(dotnetRuntimeConfigPath))
+	HostFXR::HostFXR(std::string path, std::string dotnetRuntimeConfigPath) :
+		_hostfxrHandle(nullptr),
+		_path(std::move(path)),
+		_dotnetRuntimeConfigPath(std::move(dotnetRuntimeConfigPath))
 	{
-		if (!LoadHostFxr())
-			throw std::runtime_error("Failed to load hostfxr");
-		InitializeHost();
+		if (LoadHostFxr())
+			InitializeHost();
+		else CONCERTO_ASSERT_FALSE("ConcertoDotNet: Failed to load hostfxr");
 	}
 
 	HostFXR::~HostFXR()
@@ -29,63 +31,37 @@ namespace Concerto::DotNet
 
 	bool HostFXR::LoadHostFxr()
 	{
-		try
-		{
-			std::filesystem::path hostFxrPath = GetHostFxrPath();
-			_hostfxrLib = dylib(hostFxrPath.parent_path(),hostFxrPath.filename().string(), false);
-		}
-		catch (const dylib::load_error& e)
-		{
-			std::cerr << e.what() << std::endl;
-			return false;
-		}
-		catch (const dylib::symbol_error& e)
-		{
-			std::cerr << e.what() << std::endl;
-			return false;
-		}
-		return true;
+		const std::filesystem::path hostFxrPath = GetHostFxrPath();
+		_hostfxrLib.Load(hostFxrPath);
+		return _hostfxrLib.IsLoaded();
 	}
 
 	std::string HostFXR::GetHostFxrPath() const
 	{
 		char_t buffer[260];
-		size_t bufferSize = sizeof(buffer) / sizeof(char_t);
-		int rc = get_hostfxr_path(buffer, &bufferSize, nullptr);
+		size_t bufferSize = std::size(buffer);
+		const int rc = get_hostfxr_path(buffer, &bufferSize, nullptr);
 		if (rc != 0)
+		{
+			CONCERTO_ASSERT_FALSE("ConcertoDotNet: cannot retreive hostfxr path error code : {}", rc);
 			return {};
+		}
 		std::string res;
 		res.resize(bufferSize);
-		std::copy(buffer, buffer + bufferSize, res.begin());
+		std::copy_n(buffer, bufferSize, res.begin());
 		return res;
 	}
 
 	void HostFXR::InitializeHost()
 	{
-		try
-		{
-			init_fptr = _hostfxrLib->get_function < std::int32_t(
-			const char_t *, const struct hostfxr_initialize_parameters* parameters, hostfxr_handle
-			*host_context_handle)>("hostfxr_initialize_for_runtime_config");
-
-			close_fptr = _hostfxrLib->get_function < std::int32_t(
-			const hostfxr_handle host_context_handle)>("hostfxr_close");
-
-			get_delegate_fptr = _hostfxrLib->get_function < std::int32_t(
-			const hostfxr_handle host_context_handle,
-			enum hostfxr_delegate_type type,
-			void** delegate)>("hostfxr_get_runtime_delegate");
-		}
-		catch (const dylib::symbol_error& e)
-		{
-			std::cerr << e.what() << std::endl;
-			throw;
-		}
+		init_fptr = _hostfxrLib.GetFunction<Int32, const char_t*, const hostfxr_initialize_parameters*, hostfxr_handle*>("hostfxr_initialize_for_runtime_config");
+		close_fptr = _hostfxrLib.GetFunction<Int32, const hostfxr_handle>("hostfxr_close");
+		get_delegate_fptr = _hostfxrLib.GetFunction<Int32, const hostfxr_handle, hostfxr_delegate_type, void**>("hostfxr_get_runtime_delegate");
 		std::filesystem::path path = _path;
 		path = path / _dotnetRuntimeConfigPath;
-		int result = init_fptr((char_t*)path.wstring().c_str(), nullptr, &_hostfxrHandle);
+		const int result = init_fptr(const_cast<char_t*>(path.wstring().c_str()), nullptr, &_hostfxrHandle);
 		if (_hostfxrHandle == nullptr || result != 0)
-			throw std::runtime_error("Failed to initialize hostfxr");
+			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not initalize host error code: {}", result);
 	}
 
 	void HostFXR::CloseHost()
@@ -95,24 +71,26 @@ namespace Concerto::DotNet
 
 	void HostFXR::InitializeAndStartDotNetRuntime()
 	{
-		void *function = nullptr;
-		int result = get_delegate_fptr(_hostfxrHandle, hdt_load_in_memory_assembly, &function);
+		void* function = nullptr;
+		const int result = get_delegate_fptr(_hostfxrHandle, hdt_load_in_memory_assembly, &function);
 		if (result != 0)
-			throw std::runtime_error("Failed to get delegate");
-
+		{
+			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not ");
+		}
 	}
 
-	Assembly HostFXR::LoadDotNetAssembly(std::string assemblyPath, std::string assemblyName)
+	Assembly HostFXR::LoadDotNetAssembly(const std::string& assemblyPath, std::string assemblyName)
 	{
 		std::filesystem::path path = _path;
 		path = path / assemblyPath;
 		Assembly assembly(path.string(), std::move(assemblyName));
 		void* function = nullptr;
-		int result = get_delegate_fptr(_hostfxrHandle, hdt_load_assembly_and_get_function_pointer, &function);
+		const int result = get_delegate_fptr(_hostfxrHandle, hdt_load_assembly_and_get_function_pointer, &function);
 		if (result != 0)
-			throw std::runtime_error("Failed to get delegate");
-		assembly._load_assembly_and_get_function_pointer =
-			reinterpret_cast<load_assembly_and_get_function_pointer_fn>(function);
-		return std::move(assembly);
+		{
+			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not load assembly (path '{}', name {}), error code : {}", assemblyPath, assembly._assemblyName, result);
+		}
+		assembly._load_assembly_and_get_function_pointer = reinterpret_cast<load_assembly_and_get_function_pointer_fn>(function);
+		return assembly;
 	}
 } // Concerto
