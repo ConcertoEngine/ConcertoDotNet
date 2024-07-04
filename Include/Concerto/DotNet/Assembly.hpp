@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <filesystem>
 #include <type_traits>
-
+#include <windows.h>
 #include <Concerto/Core/FunctionRef.hpp>
 #include <Concerto/Core/Assert.hpp>
 #include <hostfxr.h>
@@ -32,8 +32,7 @@ namespace Concerto::DotNet
 		 */
 		Assembly(std::string assemblyPath, std::string assemblyName) :
 			_assemblyPath(std::move(assemblyPath)),
-			_assemblyName(std::move(assemblyName)),
-			_load_assembly_and_get_function_pointer()
+			_assemblyName(std::move(assemblyName))
 		{
 		}
 
@@ -87,7 +86,7 @@ namespace Concerto::DotNet
 			if (it == _loadedFunctions.end())
 			{
 				T* functionPointer = GetFunctionPointerFromAssembly<T>(functionName);
-				_loadedFunctions.emplace(functionName, functionPointer);
+				_loadedFunctions.emplace(functionName, (void*)functionPointer);
 				return functionPointer;
 			}
 			return (T*)it->second;
@@ -104,13 +103,28 @@ namespace Concerto::DotNet
 		T* GetFunctionPointerFromAssembly(const std::string& functionName)
 		{
 			std::string dotnetType = _assemblyName + ".Lib, " + _assemblyName;
-			std::wstring wdotnetType(dotnetType.begin(), dotnetType.end()); //TODO: cross platform support
-			std::wstring wfunctionName(functionName.begin(), functionName.end()); //TODO: cross platform support
 			T* functionPointer = nullptr;
 			const std::filesystem::path path = std::filesystem::current_path() / _assemblyPath;
-			const int rc = _load_assembly_and_get_function_pointer(path.wstring().c_str(), wdotnetType.c_str(), wfunctionName.c_str(), nullptr, nullptr, (void**)&functionPointer);
+
+#ifdef CONCERTO_PLATFORM_WINDOWS
+			const auto wString = path.wstring();
+			const char_t* str = wString.c_str();
+			const std::wstring wDotnetType(dotnetType.begin(), dotnetType.end());
+			const std::wstring wFunctionName(functionName.begin(), functionName.end());
+
+			const int rc = _load_assembly_and_get_function_pointer(str, wDotnetType.c_str(), wFunctionName.c_str(), nullptr, nullptr, (void**)&functionPointer);
+#else
+			const auto string = path.string();
+			const char_t* str = string.c_str();
+			const int rc = _load_assembly_and_get_function_pointer(str, dotnetType.c_str(), functionName.c_str(), nullptr, nullptr, (void**)&functionPointer);
+#endif
+
 			if (rc != 0)
 			{
+				auto hres = HRESULT_FROM_WIN32(rc);
+				auto facility = HRESULT_FACILITY(hres);
+				auto severity = HRESULT_SEVERITY(hres);
+				auto code = HRESULT_CODE(hres);
 				CONCERTO_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, rc);
 			}
 			return functionPointer;
@@ -119,7 +133,7 @@ namespace Concerto::DotNet
 		std::string _assemblyPath;
 		std::string _assemblyName;
 		std::unordered_map<std::string, void*> _loadedFunctions;
-		FunctionRef<int(const char_t*, const char_t*, const char_t*, const char_t*, void*, void**)> _load_assembly_and_get_function_pointer;
+		std::function<int(const char_t*, const char_t*, const char_t*, const char_t*, void*, void**)> _load_assembly_and_get_function_pointer;
 	};
 } // Concerto
 #endif //CONCERTO_DOTNET_ASSEMBLY_HPP

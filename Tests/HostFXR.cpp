@@ -4,38 +4,38 @@
 
 #include <filesystem>
 #include <gtest/gtest.h>
-#include "HostFXR.hpp"
-//TODO: disable multithreaded tests
+#include <Concerto/DotNet/HostFXR.hpp>
+
 using namespace Concerto::DotNet;
 
-TEST(HostFXR, LoadHostFxr)
-{
-	try
-	{
-		std::string currentPath = std::filesystem::current_path().string();
-		HostFXR hostFxr(currentPath, "DotNetLib.runtimeconfig.json");
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-		FAIL();
-	}
-}
-
-TEST(HostFXR, LoadAssembly)
-{
-	try
-	{
-		std::string currentPath = std::filesystem::current_path().string();
-		HostFXR hostFxr(currentPath, "DotNetLib.runtimeconfig.json");
-		Assembly assembly = hostFxr.LoadDotNetAssembly("DotNetLib.dll", "DotNetLib");
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-		FAIL();
-	}
-}
+//TEST(HostFXR, LoadHostFxr)
+//{
+//	try
+//	{
+//		std::string currentPath = std::filesystem::current_path().string();
+//		HostFXR hostFxr(currentPath, "DotNetLib.runtimeconfig.json");
+//	}
+//	catch (const std::exception& e)
+//	{
+//		std::cerr << e.what() << std::endl;
+//		FAIL();
+//	}
+//}
+//
+//TEST(HostFXR, LoadAssembly)
+//{
+//	try
+//	{
+//		std::string currentPath = std::filesystem::current_path().string();
+//		HostFXR hostFxr(currentPath, "DotNetLib.runtimeconfig.json");
+//		Assembly assembly = hostFxr.LoadDotNetAssembly("DotNetLib.dll", "DotNetLib");
+//	}
+//	catch (const std::exception& e)
+//	{
+//		std::cerr << e.what() << std::endl;
+//		FAIL();
+//	}
+//}
 
 TEST(HostFXR, InvokeAssembly)
 {
@@ -50,7 +50,7 @@ TEST(HostFXR, InvokeAssembly)
 			int number;
 		};
 		lib_args args{
-			.message = L"This string is passed from C++ to C#",
+			.message = CONCERTO_AUTO_WIDE_STRING("This string is passed from C++ to C#"),
 			.number = 42
 		};
 

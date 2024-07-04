@@ -1,3 +1,11 @@
+rule("csproj")
+	set_extensions(".csproj")
+	on_build_file(function (target, sourcefile)
+		os.execv("dotnet", {"build", sourcefile, "-o", target:targetdir() .."/foo"})
+	end)
+rule_end()
+
+
 target("ConcertoDotNetTests")
     set_kind("binary")
     set_languages("cxx20")
@@ -5,9 +13,11 @@ target("ConcertoDotNetTests")
     add_deps("ConcertoDotNet")
     add_packages("gtest")
     add_files("*.cpp")
+    add_files("../Assets/DotNetLib.csproj")
     after_build(function(target)
         print("Copying resources...")
         local binaryPath = "$(buildir)/$(plat)/$(arch)/$(mode)"
         os.cp("Assets/**", binaryPath)
         print("Copying resources... Done !")
     end)
+    add_rules("csproj")

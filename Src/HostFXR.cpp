@@ -32,6 +32,8 @@ namespace Concerto::DotNet
 	bool HostFXR::LoadHostFxr()
 	{
 		const std::filesystem::path hostFxrPath = GetHostFxrPath();
+		if (hostFxrPath.empty())
+			return false;
 		_hostfxrLib.Load(hostFxrPath);
 		return _hostfxrLib.IsLoaded();
 	}
@@ -59,7 +61,16 @@ namespace Concerto::DotNet
 		get_delegate_fptr = _hostfxrLib.GetFunction<Int32, const hostfxr_handle, hostfxr_delegate_type, void**>("hostfxr_get_runtime_delegate");
 		std::filesystem::path path = _path;
 		path = path / _dotnetRuntimeConfigPath;
-		const int result = init_fptr(const_cast<char_t*>(path.wstring().c_str()), nullptr, &_hostfxrHandle);
+
+#ifdef CONCERTO_PLATFORM_WINDOWS
+		const auto wString = path.wstring();
+		const char_t* str = wString.c_str();
+#else
+		const auto string = path.string();
+		const char_t* str = string.c_str();
+#endif
+
+		const int result = init_fptr(str, nullptr, &_hostfxrHandle);
 		if (_hostfxrHandle == nullptr || result != 0)
 			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not initalize host error code: {}", result);
 	}
@@ -91,6 +102,7 @@ namespace Concerto::DotNet
 			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not load assembly (path '{}', name {}), error code : {}", assemblyPath, assembly._assemblyName, result);
 		}
 		assembly._load_assembly_and_get_function_pointer = reinterpret_cast<load_assembly_and_get_function_pointer_fn>(function);
+		CloseHost();
 		return assembly;
 	}
 } // Concerto

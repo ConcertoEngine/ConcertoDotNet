@@ -15,6 +15,12 @@
 #include "Concerto/DotNet/Defines.hpp"
 #include "Concerto/DotNet/Assembly.hpp"
 
+#ifdef CONCERTO_PLATFORM_WINDOWS
+#define CONCERTO_AUTO_WIDE_STRING(str) L##str
+#else
+#define CONCERTO_AUTO_WIDE_STRING(str) str
+#endif
+
 namespace Concerto::DotNet
 {
 	class CONCERTO_DOTNET_API HostFXR
