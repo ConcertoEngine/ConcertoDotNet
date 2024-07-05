@@ -21,11 +21,4 @@ target("ConcertoDotNet")
 
     add_headerfiles('Include/(Concerto/DotNet/*.hpp)')
 
-    after_build(function(target)
-        print("Copying resources...")
-        local binaryPath = "$(buildir)/$(plat)/$(arch)/$(mode)"
-        os.cp("Assets/**", binaryPath)
-        print("Copying resources... Done !")
-    end)
-
 includes("Tests/xmake.lua")
