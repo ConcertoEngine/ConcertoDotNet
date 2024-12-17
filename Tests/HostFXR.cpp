@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <Concerto/DotNet/HostFXR.hpp>
 
-using namespace Concerto::DotNet;
+using namespace cct::DotNet;
 
 //TEST(HostFXR, LoadHostFxr)
 //{
@@ -50,7 +50,7 @@ TEST(HostFXR, InvokeAssembly)
 			int number;
 		};
 		lib_args args{
-			.message = CONCERTO_AUTO_WIDE_STRING("This string is passed from C++ to C#"),
+			.message = CCT_AUTO_WIDE_STRING("This string is passed from C++ to C#"),
 			.number = 42
 		};
 

@@ -7,14 +7,14 @@
 
 #include <Concerto/Core/Types.hpp>
 
-#ifdef CONCERTO_COMPILER_MSVC
+#ifdef CCT_COMPILER_MSVC
 #pragma warning(disable: 4251) // Disable warning about DLL interface needed
 #endif
 
-#ifdef CONCERTO_DOTNET_BUILD
-	#define CONCERTO_DOTNET_API CONCERTO_EXPORT
+#ifdef CCT_DOTNET_BUILD
+	#define CCT_DOTNET_API CCT_EXPORT
 #else
-	#define CONCERTO_DOTNET_API CONCERTO_IMPORT
-#endif // CONCERTO_DOTNET_BUILD
+	#define CCT_DOTNET_API CCT_IMPORT
+#endif // CCT_DOTNET_BUILD
 
 #endif // CONCERTO_DOTNET_DEFINES_HPP

@@ -11,7 +11,7 @@ target("ConcertoDotNet")
     set_kind("shared")
     set_warnings("all")
 
-    add_defines("CONCERTO_DOTNET_BUILD")
+    add_defines("CCT_DOTNET_BUILD")
     add_packages("dotnet", "concerto-core", {public = true})
     add_files("Src/*.cpp")
     add_cxxflags("cl::/Zc:preprocessor", { public = true })

@@ -16,12 +16,12 @@
 
 #include "Concerto/DotNet/Defines.hpp"
 
-namespace Concerto::DotNet
+namespace cct::DotNet
 {
 	/**
 	 * @brief A class that represents a .NET assembly
 	 */
-	class CONCERTO_DOTNET_API Assembly
+	class CCT_DOTNET_API Assembly
 	{
 	public:
 		friend class HostFXR;
@@ -106,7 +106,7 @@ namespace Concerto::DotNet
 			T* functionPointer = nullptr;
 			const std::filesystem::path path = std::filesystem::current_path() / _assemblyPath;
 
-#ifdef CONCERTO_PLATFORM_WINDOWS
+#ifdef CCT_PLATFORM_WINDOWS
 			const auto wString = path.wstring();
 			const char_t* str = wString.c_str();
 			const std::wstring wDotnetType(dotnetType.begin(), dotnetType.end());
@@ -125,7 +125,7 @@ namespace Concerto::DotNet
 				auto facility = HRESULT_FACILITY(hres);
 				auto severity = HRESULT_SEVERITY(hres);
 				auto code = HRESULT_CODE(hres);
-				CONCERTO_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, rc);
+				CCT_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, rc);
 			}
 			return functionPointer;
 		}

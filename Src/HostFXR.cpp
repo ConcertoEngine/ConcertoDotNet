@@ -12,7 +12,7 @@
 #include "nethost.h"
 #include "Assembly.hpp"
 
-namespace Concerto::DotNet
+namespace cct::DotNet
 {
 	HostFXR::HostFXR(std::string path, std::string dotnetRuntimeConfigPath) :
 		_hostfxrHandle(nullptr),
@@ -21,7 +21,7 @@ namespace Concerto::DotNet
 	{
 		if (LoadHostFxr())
 			InitializeHost();
-		else CONCERTO_ASSERT_FALSE("ConcertoDotNet: Failed to load hostfxr");
+		else CCT_ASSERT_FALSE("ConcertoDotNet: Failed to load hostfxr");
 	}
 
 	HostFXR::~HostFXR()
@@ -45,7 +45,7 @@ namespace Concerto::DotNet
 		const int rc = get_hostfxr_path(buffer, &bufferSize, nullptr);
 		if (rc != 0)
 		{
-			CONCERTO_ASSERT_FALSE("ConcertoDotNet: cannot retreive hostfxr path error code : {}", rc);
+			CCT_ASSERT_FALSE("ConcertoDotNet: cannot retreive hostfxr path error code : {}", rc);
 			return {};
 		}
 		std::string res;
@@ -62,7 +62,7 @@ namespace Concerto::DotNet
 		std::filesystem::path path = _path;
 		path = path / _dotnetRuntimeConfigPath;
 
-#ifdef CONCERTO_PLATFORM_WINDOWS
+#ifdef CCT_PLATFORM_WINDOWS
 		const auto wString = path.wstring();
 		const char_t* str = wString.c_str();
 #else
@@ -72,7 +72,7 @@ namespace Concerto::DotNet
 
 		const int result = init_fptr(str, nullptr, &_hostfxrHandle);
 		if (_hostfxrHandle == nullptr || result != 0)
-			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not initalize host error code: {}", result);
+			CCT_ASSERT_FALSE("ConcertoDotNet: could not initalize host error code: {}", result);
 	}
 
 	void HostFXR::CloseHost()
@@ -86,7 +86,7 @@ namespace Concerto::DotNet
 		const int result = get_delegate_fptr(_hostfxrHandle, hdt_load_in_memory_assembly, &function);
 		if (result != 0)
 		{
-			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not ");
+			CCT_ASSERT_FALSE("ConcertoDotNet: could not ");
 		}
 	}
 
@@ -99,7 +99,7 @@ namespace Concerto::DotNet
 		const int result = get_delegate_fptr(_hostfxrHandle, hdt_load_assembly_and_get_function_pointer, &function);
 		if (result != 0)
 		{
-			CONCERTO_ASSERT_FALSE("ConcertoDotNet: could not load assembly (path '{}', name {}), error code : {}", assemblyPath, assembly._assemblyName, result);
+			CCT_ASSERT_FALSE("ConcertoDotNet: could not load assembly (path '{}', name {}), error code : {}", assemblyPath, assembly._assemblyName, result);
 		}
 		assembly._load_assembly_and_get_function_pointer = reinterpret_cast<load_assembly_and_get_function_pointer_fn>(function);
 		CloseHost();

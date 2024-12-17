@@ -15,15 +15,15 @@
 #include "Concerto/DotNet/Defines.hpp"
 #include "Concerto/DotNet/Assembly.hpp"
 
-#ifdef CONCERTO_PLATFORM_WINDOWS
-#define CONCERTO_AUTO_WIDE_STRING(str) L##str
+#ifdef CCT_PLATFORM_WINDOWS
+#define CCT_AUTO_WIDE_STRING(str) L##str
 #else
-#define CONCERTO_AUTO_WIDE_STRING(str) str
+#define CCT_AUTO_WIDE_STRING(str) str
 #endif
 
-namespace Concerto::DotNet
+namespace cct::DotNet
 {
-	class CONCERTO_DOTNET_API HostFXR
+	class CCT_DOTNET_API HostFXR
 	{
 	 public:
 		explicit HostFXR(std::string path, std::string dotnetRuntimeConfigPath);
