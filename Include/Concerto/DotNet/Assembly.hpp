@@ -9,10 +9,15 @@
 #include <unordered_map>
 #include <filesystem>
 #include <type_traits>
-#include <windows.h>
+
+#ifdef CCT_PLATFORM_WINDOWS
+	#include <windows.h>
+#endif
+
+#include <hostfxr.h>
 #include <Concerto/Core/FunctionRef.hpp>
 #include <Concerto/Core/Assert.hpp>
-#include <hostfxr.h>
+#include <Concerto/Core/Error.hpp>
 
 #include "Concerto/DotNet/Defines.hpp"
 
@@ -121,11 +126,8 @@ namespace cct::DotNet
 
 			if (rc != 0)
 			{
-				auto hres = HRESULT_FROM_WIN32(rc);
-				auto facility = HRESULT_FACILITY(hres);
-				auto severity = HRESULT_SEVERITY(hres);
-				auto code = HRESULT_CODE(hres);
 				CCT_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, rc);
+				return nullptr;
 			}
 			return functionPointer;
 		}

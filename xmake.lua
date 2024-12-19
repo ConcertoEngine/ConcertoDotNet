@@ -21,6 +21,6 @@ target("concerto-dotnet")
 
     add_headerfiles('Include/(Concerto/DotNet/*.hpp)')
 
-includes("rules/**.lua")
+
 includes("Tests/xmake.lua")
 includes("Sample/xmake.lua")
