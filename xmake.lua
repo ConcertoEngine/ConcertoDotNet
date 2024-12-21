@@ -46,6 +46,6 @@ target("concerto-dotnet")
     add_rules("xml_reflect")
     add_headerfiles('Include/(Concerto/DotNet/*.hpp)')
 
-
+includes("Rules/*.lua")
 includes("Tests/xmake.lua")
 includes("Sample/xmake.lua")
