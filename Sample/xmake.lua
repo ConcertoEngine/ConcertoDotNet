@@ -14,4 +14,4 @@ target("concerto-dotnet-sample")
     add_packages("concerto-reflection")
 
     add_rules("csproj")
-    add_rules("xml_reflect")
+    add_rules("@concerto-reflection/xml_reflect")
