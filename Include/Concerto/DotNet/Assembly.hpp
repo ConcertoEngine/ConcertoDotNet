@@ -9,19 +9,24 @@
 #include <unordered_map>
 #include <filesystem>
 #include <type_traits>
-#include <windows.h>
+
 #include <Concerto/Core/FunctionRef.hpp>
 #include <Concerto/Core/Assert.hpp>
+#include <Concerto/Reflection/Reflection.hpp>
+
+#ifdef CCT_PLATFORM_WINDOWS
+	#include <windows.h>
+#endif
 #include <hostfxr.h>
 
 #include "Concerto/DotNet/Defines.hpp"
 
-namespace cct::DotNet
+namespace cct::dotnet
 {
 	/**
 	 * @brief A class that represents a .NET assembly
 	 */
-	class CCT_DOTNET_API Assembly
+	class CCT_DOTNET_API Assembly : public cct::refl::Object
 	{
 	public:
 		friend class HostFXR;
@@ -30,10 +35,10 @@ namespace cct::DotNet
 		 * @param assemblyPath The path to the assembly file
 		 * @param assemblyName The name of the assembly
 		 */
-		Assembly(std::string assemblyPath, std::string assemblyName) :
-			_assemblyPath(std::move(assemblyPath)),
-			_assemblyName(std::move(assemblyName))
+		void Construct(std::string assemblyPath, std::string assemblyName)
 		{
+			_assemblyPath = std::move(assemblyPath);
+			_assemblyName = std::move(assemblyName);
 		}
 
 		/**
@@ -71,7 +76,6 @@ namespace cct::DotNet
 			auto* functionPointer = GetFunctionPointer<void(Args...)>(functionName);
 			functionPointer(std::forward<Args>(args)...);
 		}
-	private:
 
 		/**
 		 * @brief Check if the function pointer exists in the cache, if not, load it from the assembly
@@ -86,12 +90,14 @@ namespace cct::DotNet
 			if (it == _loadedFunctions.end())
 			{
 				T* functionPointer = GetFunctionPointerFromAssembly<T>(functionName);
-				_loadedFunctions.emplace(functionName, (void*)functionPointer);
+				_loadedFunctions.emplace(functionName, reinterpret_cast<void*>(functionPointer));
 				return functionPointer;
 			}
-			return (T*)it->second;
+			return static_cast<T*>(it->second);
 		}
 
+		CCT_OBJECT(Assembly);
+	private:
 		/**
 		 * @brief Get the function pointer from the assembly
 		 * @tparam T The function signature
@@ -112,7 +118,7 @@ namespace cct::DotNet
 			const std::wstring wDotnetType(dotnetType.begin(), dotnetType.end());
 			const std::wstring wFunctionName(functionName.begin(), functionName.end());
 
-			const int rc = _load_assembly_and_get_function_pointer(str, wDotnetType.c_str(), wFunctionName.c_str(), nullptr, nullptr, (void**)&functionPointer);
+			const int rc = _load_assembly_and_get_function_pointer(str, wDotnetType.c_str(), wFunctionName.c_str(), nullptr, nullptr, reinterpret_cast<void**>(&functionPointer));
 #else
 			const auto string = path.string();
 			const char_t* str = string.c_str();
@@ -121,11 +127,8 @@ namespace cct::DotNet
 
 			if (rc != 0)
 			{
-				auto hres = HRESULT_FROM_WIN32(rc);
-				auto facility = HRESULT_FACILITY(hres);
-				auto severity = HRESULT_SEVERITY(hres);
-				auto code = HRESULT_CODE(hres);
 				CCT_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, rc);
+				return nullptr;
 			}
 			return functionPointer;
 		}

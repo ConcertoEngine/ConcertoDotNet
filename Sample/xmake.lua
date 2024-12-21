@@ -1,17 +1,3 @@
-rule("csproj")
-	set_extensions(".csproj")
-	on_build_file(function (target, sourcefile)
-		os.execv("dotnet", {"build", sourcefile, "-o", target:targetdir()})
-	end)
-
-    after_build(function(target)
-        local binaryPath = "$(buildir)/$(plat)/$(arch)/$(mode)"
-        -- os.cp("DotNetLib.deps.json", binaryPath)
-        -- os.cp("DotNetLib.runtimeconfig.json", binaryPath)
-    end)
-
-rule_end()
-
 
 target("concerto-dotnet-sample")
     set_kind("binary")
@@ -21,8 +7,8 @@ target("concerto-dotnet-sample")
     add_headerfiles("DotNetHello.hpp")
     add_includedirs(".")
 
-    add_files("DotNetHello.cpp", "DotNetPackage.xml")
-    add_files("DotNetLib.csproj")
+    add_files("DotNetHello.cpp", "DotNetLibPackage.xml")
+    add_files("DotNetLib.csproj", "*.cs")
 
     add_deps("concerto-dotnet")
     add_packages("concerto-reflection")

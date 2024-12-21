@@ -21,7 +21,7 @@
 #define CCT_AUTO_WIDE_STRING(str) str
 #endif
 
-namespace cct::DotNet
+namespace cct::dotnet
 {
 	class CCT_DOTNET_API HostFXR
 	{
@@ -35,7 +35,7 @@ namespace cct::DotNet
 		void CloseHost();
 		void InitializeAndStartDotNetRuntime();
 
-		Assembly LoadDotNetAssembly(const std::string &assemblyPath, std::string assemblyName);
+		Result<Int32, std::string> LoadDotNetAssembly(Assembly& assembly, const std::string &assemblyPath, std::string assemblyName);
 	 private:
 		bool LoadHostFxr();
 		FunctionRef<Int32(const char_t *, const hostfxr_initialize_parameters *, hostfxr_handle *)> init_fptr;

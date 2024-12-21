@@ -12,7 +12,7 @@
 #include "nethost.h"
 #include "Assembly.hpp"
 
-namespace cct::DotNet
+namespace cct::dotnet
 {
 	HostFXR::HostFXR(std::string path, std::string dotnetRuntimeConfigPath) :
 		_hostfxrHandle(nullptr),
@@ -90,19 +90,20 @@ namespace cct::DotNet
 		}
 	}
 
-	Assembly HostFXR::LoadDotNetAssembly(const std::string& assemblyPath, std::string assemblyName)
+	Result<Int32, std::string> HostFXR::LoadDotNetAssembly(Assembly& assembly, const std::string& assemblyPath, std::string assemblyName)
 	{
 		std::filesystem::path path = _path;
 		path = path / assemblyPath;
-		Assembly assembly(path.string(), std::move(assemblyName));
+		assembly.Construct(path.string(), std::move(assemblyName));
 		void* function = nullptr;
 		const int result = get_delegate_fptr(_hostfxrHandle, hdt_load_assembly_and_get_function_pointer, &function);
 		if (result != 0)
 		{
 			CCT_ASSERT_FALSE("ConcertoDotNet: could not load assembly (path '{}', name {}), error code : {}", assemblyPath, assembly._assemblyName, result);
+			return std::format("ConcertoDotNet: could not load assembly (path '{}', name {}), error code : {}", assemblyPath, assembly._assemblyName, result);
 		}
 		assembly._load_assembly_and_get_function_pointer = reinterpret_cast<load_assembly_and_get_function_pointer_fn>(function);
 		CloseHost();
-		return assembly;
+		return {0};
 	}
 } // Concerto
