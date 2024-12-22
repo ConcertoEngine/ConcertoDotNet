@@ -30,7 +30,13 @@ int main()
 
 	const cct::refl::Class* klass = cct::dotnet::DotNetLib::GetClass();
 	auto obj = klass->CreateDefaultObject<cct::dotnet::DotNetLib>();
-	hostFxr.LoadDotNetAssembly(*obj, "DotNetLib.dll", "DotNetLib");
+	cct::Result<cct::Int32, std::string> res = hostFxr.LoadDotNetAssembly(*obj, "DotNetLib.dll", "DotNetLib");
+
+	if (res.IsError())
+	{
+		cct::Logger::Error("HostFxr error '{}'", res.GetError());
+		return EXIT_FAILURE;
+	}
 
 	const cct::refl::Method* method = klass->GetMethod("Hello"sv);
 	const_cast<cct::dotnet::DotNetMethod*>(static_cast<const cct::dotnet::DotNetMethod*>(method))->SetAssembly(*obj);

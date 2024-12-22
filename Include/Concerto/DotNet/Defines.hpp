@@ -17,4 +17,18 @@
 	#define CCT_DOTNET_API CCT_IMPORT
 #endif // CCT_DOTNET_BUILD
 
+#ifdef CCT_PLATFORM_WINDOWS
+#define CCT_AUTO_WIDE_STRING(str) L##str
+#else
+#define CCT_AUTO_WIDE_STRING(str) str
+#endif // CCT_PLATFORM_WINDOWS
+
+
+#include <hostfxr.h>
+
+namespace cct::dotnet
+{
+	using String = std::basic_string<char_t>;
+}
+
 #endif // CONCERTO_DOTNET_DEFINES_HPP

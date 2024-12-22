@@ -15,12 +15,6 @@
 #include "Concerto/DotNet/Defines.hpp"
 #include "Concerto/DotNet/Assembly.hpp"
 
-#ifdef CCT_PLATFORM_WINDOWS
-#define CCT_AUTO_WIDE_STRING(str) L##str
-#else
-#define CCT_AUTO_WIDE_STRING(str) str
-#endif
-
 namespace cct::dotnet
 {
 	class CCT_DOTNET_API HostFXR
@@ -31,22 +25,25 @@ namespace cct::dotnet
 
 		[[nodiscard]] std::string GetHostFxrPath() const;
 
-		void InitializeHost();
+		Result<bool, std::string> InitializeHost();
 		void CloseHost();
 		void InitializeAndStartDotNetRuntime();
 
 		Result<Int32, std::string> LoadDotNetAssembly(Assembly& assembly, const std::string &assemblyPath, std::string assemblyName);
+
+		void SetSdkPath(String path);
 	 private:
-		bool LoadHostFxr();
-		FunctionRef<Int32(const char_t *, const hostfxr_initialize_parameters *, hostfxr_handle *)> init_fptr;
-		FunctionRef<Int32(const hostfxr_handle, hostfxr_delegate_type, void **)> get_delegate_fptr;
-		FunctionRef<Int32(const char_t *, const char_t *, const char_t *, const char_t *, void  *, void **)> dotnet_assembly;
-		FunctionRef<Int32(const hostfxr_handle)> close_fptr;
+		Result<bool, std::string> LoadHostFxr();
+		FunctionRef<Int32(const char_t *, const hostfxr_initialize_parameters *, hostfxr_handle *)> hostFxrInitializeHosfxr;
+		FunctionRef<Int32(const hostfxr_handle, hostfxr_delegate_type, void **)> hostFxrGetRuntimeDelegate;
+		FunctionRef<Int32(const char_t *, const char_t *, const char_t *, const char_t *, void  *, void **)> hostFxrDotnetAssembly;
+		FunctionRef<Int32(const hostfxr_handle)> hostFxrClose;
 
 		hostfxr_handle _hostfxrHandle;
 		DynLib _hostfxrLib;
 		std::string _path;
 		std::string _dotnetRuntimeConfigPath;
+		String _sdkPath;
 	};
 
 } // Concerto::DotNet

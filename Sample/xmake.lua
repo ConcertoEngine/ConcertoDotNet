@@ -4,6 +4,10 @@ target("concerto-dotnet-sample")
     set_languages("cxx20")
     set_warnings("all")
 
+    if (is_mode("debug")) then
+        set_symbols("debug")
+    end
+
     add_headerfiles("DotNetHello.hpp")
     add_includedirs(".")
 
