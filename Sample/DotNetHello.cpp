@@ -1,5 +1,7 @@
 #include "DotNetHello.hpp"
 
+#include <thread>
+
 #include "HostFXR.hpp"
 
 namespace cct
@@ -30,7 +32,7 @@ int main()
 
 	const cct::refl::Class* klass = cct::dotnet::DotNetLib::GetClass();
 	auto obj = klass->CreateDefaultObject<cct::dotnet::DotNetLib>();
-	cct::Result<cct::Int32, std::string> res = hostFxr.LoadDotNetAssembly(*obj, "DotNetLib.dll", "DotNetLib");
+	cct::Result<cct::Int32, std::string> res = hostFxr.LoadDotNetAssembly(*obj, "E:/Documents/git/ConcertoEngine/ConcertoDotNet/build/windows/x64/debug/obj/DotNetLib/debug/DotNetLib.dll", "DotNetLib");
 
 	if (res.IsError())
 	{
