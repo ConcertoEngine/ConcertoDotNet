@@ -4,8 +4,8 @@ add_repositories("Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.gi
 
 ---- Options ----
 option("dotnet_self_builded", {description = "Use a provided build", default = false, type = "boolean"})
-option("hostfxr", {description = "Path to the hostfxr library", default = "", type = "string"})
-option("corehost", {description = "Path to the corehost folder", default = "", type = "string"})
+option("hostfxr", {description = "Path to the hostfxr library", default = nil, type = "string"})
+option("corehost", {description = "Path to the corehost folder", default = nil, type = "string"})
 
 if has_config("dotnet_self_builded") then
     includes("dotnet-self-builded.lua")
@@ -41,9 +41,9 @@ target("concerto-dotnet")
 
     if has_config("dotnet_self_builded") then
         add_defines("CCT_HOSTFXR_PATH=\"" .. get_config("hostfxr") .. "\"")
-        add_packages("dotnet-self-builded")
+        add_packages("dotnet-self-builded", {public = true})
     else
-        add_packages("dotnet")
+        add_packages("dotnet", {public = true})
     end
 
 includes("Rules/*.lua")
