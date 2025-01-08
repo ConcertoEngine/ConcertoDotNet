@@ -16,6 +16,7 @@
 
 
 #include "Concerto/DotNet/Defines.hpp"
+#include "Concerto/Dotnet/StatusCode.hpp"
 
 namespace cct::dotnet
 {
@@ -35,10 +36,12 @@ namespace cct::dotnet
 		{
 			_assemblyPath = std::move(assemblyPath);
 			_assemblyName = std::move(assemblyName);
-			auto res = _loadAssembly(_assemblyPath.c_str(), nullptr, nullptr);
-			if (res != 0)
+			
+			auto res = static_cast<StatusCode>(_loadAssembly(_assemblyPath.c_str(), nullptr, nullptr));
+			if (res != StatusCode::Success)
 			{
 				CCT_ASSERT_FALSE("ConcertoDotNet: could not load assembly");
+				return;
 			}
 		}
 
@@ -118,21 +121,16 @@ namespace cct::dotnet
 			const std::filesystem::path path = std::filesystem::current_path() / _assemblyPath;
 
 #ifdef CCT_PLATFORM_WINDOWS
-			const auto wString = path.wstring();
-			const char_t* str = wString.c_str();
 			const String wFunctionName(functionName.begin(), functionName.end());
 
-			const int rc = _getFunctionPointer(str, dotnetType.c_str(), wFunctionName.c_str(), nullptr, nullptr, reinterpret_cast<void**>(&functionPointer));
+			const auto rc = static_cast<StatusCode>(_getFunctionPointer(dotnetType.c_str(), wFunctionName.c_str(), nullptr, nullptr, nullptr, reinterpret_cast<void**>(&functionPointer)));
 #else
-			const auto string = path.string();
-			const char_t* str = string.c_str();
-
-			const int rc = _load_assembly_and_get_function_pointer(str, dotnetType.c_str(), functionName.c_str(), nullptr, nullptr, (void**)&functionPointer);
+			const auto rc = static_cast<StatusCode>(_getFunctionPointer(dotnetType.c_str(), functionName.c_str(), nullptr, nullptr, nullptr, reinterpret_cast<void**>(&functionPointer)));
 #endif
 
-			if (rc != 0)
+			if (rc != StatusCode::Success)
 			{
-				CCT_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, rc);
+				CCT_ASSERT_FALSE("ConcertoDotNet: Invalid return code {} -> {}", functionName, static_cast<StatusCodeUnderlyingType>(rc));
 				return nullptr;
 			}
 			return functionPointer;

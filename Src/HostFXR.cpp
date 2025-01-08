@@ -12,6 +12,7 @@
 #include <nethost.h>
 
 #include "Concerto/Dotnet/HostFXR.hpp"
+#include "Concerto/Dotnet/StatusCode.hpp"
 #include "Concerto/Dotnet/Assembly.hpp"
 
 #ifdef CCT_PLATFORM_WINDOWS
@@ -133,11 +134,12 @@ namespace cct::dotnet
 #endif
 
 		const char_t* str = platformPath.c_str();
-		const int result = hostFxrInitializeHosfxr(str, nullptr, &_hostfxrHandle);
-		if (_hostfxrHandle == nullptr || result != 0)
+		
+		const StatusCode result = static_cast<StatusCode>(hostFxrInitializeHosfxr(str, nullptr, &_hostfxrHandle));
+		if (_hostfxrHandle == nullptr || static_cast<StatusCodeUnderlyingType>(result) != 0)
 		{
-			CCT_ASSERT_FALSE("ConcertoDotNet: could not initialize host error code: {}", result);
-			return std::format("Could not initialize host error code: {}", result);
+			CCT_ASSERT_FALSE("ConcertoDotNet: could not initialize host error code: {}", static_cast<StatusCodeUnderlyingType>(result));
+			return std::format("Could not initialize host error code: {}", static_cast<StatusCodeUnderlyingType>(result));
 		}
 		return true;
 	}

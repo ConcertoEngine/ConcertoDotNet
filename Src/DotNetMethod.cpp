@@ -13,14 +13,14 @@ namespace cct::dotnet
 	{
 	}
 
-	bool DotNetMethod::SetAssembly(Assembly& assembly)
+	bool DotNetMethod::SetAssembly(Assembly& assembly) const
 	{
 		_assembly = &assembly;
 
 		auto* func = assembly.GetFunctionPointer<void()>(std::string(GetName()));
 		if (func == nullptr)
 			return false;
-		SetCustomInvoker(reinterpret_cast<void*>(func));
+		const_cast<DotNetMethod*>(this)->SetCustomInvoker(reinterpret_cast<void*>(func));
 		return true;
 	}
 }

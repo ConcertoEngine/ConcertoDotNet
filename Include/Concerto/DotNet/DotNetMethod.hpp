@@ -22,9 +22,9 @@ namespace cct::dotnet
 	public:
 		DotNetMethod(std::string_view name, const cct::refl::Class* returnValue, std::vector<const cct::refl::Class*> parameters, std::size_t index);
 
-		bool SetAssembly(Assembly& assembly);
+		bool SetAssembly(Assembly& assembly) const;
 	private:
-		Assembly* _assembly;
+		mutable Assembly* _assembly;
 	};
 }
 
