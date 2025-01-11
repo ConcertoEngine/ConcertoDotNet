@@ -11,6 +11,11 @@
                 <param name="arg" type="void*"/>
                 <param name="size" type="cct::UInt32"/>
             </method>
+
+            <method name="UpdateIntVectorWithoutCopy" return="cct::Int32" base="cct::dotnet::DotNetMethod" customInvoke="true">
+                <param name="pointer" type="cct::Int32*"/>
+                <param name="lenght" type="cct::Int32"/>
+            </method>
         </class>
       </namespace>
     </namespace>

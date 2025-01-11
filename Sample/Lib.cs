@@ -1,54 +1,71 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace DotNetLib
 {
-    public static class Lib
-    {
-        private static int s_CallCount = 1;
+	public static class Lib
+	{
+		private static int s_CallCount = 1;
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct LibArgs
-        {
-            public IntPtr Message;
-            public int Number;
-        }
+		[StructLayout(LayoutKind.Sequential)]
+		public struct LibArgs
+		{
+			public IntPtr Message;
+			public int Number;
+		}
 
-        public static int Hello(IntPtr arg, int argLength)
-        {
-            if (argLength < System.Runtime.InteropServices.Marshal.SizeOf(typeof(LibArgs)))
-            {
-                return 1;
-            }
+		public static int Hello(IntPtr arg, int sizeOfArgs)
+		{
+			if (sizeOfArgs < Marshal.SizeOf(typeof(LibArgs)))
+			{
+				Debugger.Break();
+				Console.WriteLine("Invalid argument sizeof");
+				return 1;
+			}
 
-            LibArgs libArgs = Marshal.PtrToStructure<LibArgs>(arg);
-            Console.WriteLine($"Hello, world! from {nameof(Lib)} [count: {s_CallCount++}]");
-            PrintLibArgs(libArgs);
-            return 0;
-        }
+			LibArgs libArgs = Marshal.PtrToStructure<LibArgs>(arg);
 
-        public delegate void CustomEntryPointDelegate(LibArgs libArgs);
-        public static void CustomEntryPoint(LibArgs libArgs)
-        {
-            Console.WriteLine($"Hello, world! from {nameof(CustomEntryPoint)} in {nameof(Lib)}");
-            PrintLibArgs(libArgs);
-        }
+			if (libArgs.Message == IntPtr.Zero)
+			{
+				Debugger.Break();
+				Console.WriteLine("Message is null");
+				return 1;
+			}
 
-        [UnmanagedCallersOnly]
-        public static void CustomEntryPointUnmanagedCallersOnly(LibArgs libArgs)
-        {
-            Console.WriteLine($"Hello, world! from {nameof(CustomEntryPointUnmanagedCallersOnly)} in {nameof(Lib)}");
-            PrintLibArgs(libArgs);
-        }
+			Console.WriteLine($"Hello, world! from {nameof(Lib)} [count: {s_CallCount++}]");
+			PrintLibArgs(libArgs);
+			return 0;
+		}
 
-        private static void PrintLibArgs(LibArgs libArgs)
-        {
-            string message = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? Marshal.PtrToStringUni(libArgs.Message)
-                : Marshal.PtrToStringUTF8(libArgs.Message);
+		public static int UpdateIntVectorWithoutCopy(IntPtr pointer, int lenght)
+		{
+			if (pointer == IntPtr.Zero)
+			{
+				Debugger.Break();
+				Console.WriteLine("Pointer is null");
+				return 1;
+			}
 
-            Console.WriteLine($"-- message: {message}");
-            Console.WriteLine($"-- number: {libArgs.Number}");
-        }
-    }
+			unsafe
+			{
+				Span<Int32> vector = new(pointer.ToPointer(), lenght);
+				for (Int32 i = 0; i < vector.Length; i++)
+				{
+					vector[i] = i * 2;
+				}
+			}
+			return 0;
+		}
+
+		private static void PrintLibArgs(LibArgs libArgs)
+		{
+			string message = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+				? Marshal.PtrToStringUni(libArgs.Message)
+				: Marshal.PtrToStringUTF8(libArgs.Message);
+
+			Console.WriteLine($"-- message: {message}");
+			Console.WriteLine($"-- number: {libArgs.Number}");
+		}
+	}
 }

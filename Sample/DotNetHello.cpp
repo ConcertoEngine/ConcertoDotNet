@@ -33,19 +33,39 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	const cct::refl::Method* method = klass->GetMethod("Hello"sv);
-	static_cast<const cct::dotnet::DotNetMethod*>(method)->SetAssembly(*obj); //Fixme
-
-	struct lib_args
+	//Print message in dotnet
 	{
-		const char_t* message;
-		int number;
-	};
-	lib_args args{
-		.message = CCT_AUTO_WIDE_STRING("This string is passed from C++ to C#"),
-		.number = 42
-	};
-	cct::Result<cct::Int32, std::string> result = method->Invoke<cct::Int32>(*obj, static_cast<void*>(&args), static_cast<cct::UInt32>(sizeof(args)));
+		const cct::refl::Method* method = klass->GetMethod("Hello"sv);
+		static_cast<const cct::dotnet::DotNetMethod*>(method)->SetAssembly(*obj); //Fixme
+
+		struct lib_args
+		{
+			const char_t* message;
+			int number;
+		};
+		lib_args args{
+			.message = CCT_AUTO_WIDE_STRING("This string is passed from C++ to C#"),
+			.number = 42
+		};
+		cct::Result<cct::Int32, std::string> result = method->Invoke<cct::Int32>(*obj, static_cast<void*>(&args), static_cast<cct::UInt32>(sizeof(args)));
+		result = method->Invoke<cct::Int32>(*obj, static_cast<void*>(&args), static_cast<cct::UInt32>(sizeof(args)));
+	}
+
+	//Dotnet edit vector of Int32
+	{
+		const cct::refl::Method* method = klass->GetMethod("UpdateIntVectorWithoutCopy"sv);
+		static_cast<const cct::dotnet::DotNetMethod*>(method)->SetAssembly(*obj); //Fixme
+
+		std::vector<cct::Int32> vec = { 1, 2, 3, 4, 5 };
+
+		cct::Result<cct::Int32, std::string> result = method->Invoke<cct::Int32>(*obj, vec.data(), static_cast<cct::Int32>(vec.size()));
+
+		cct::Logger::Info("Dotnet edited vector:\n");
+		for (const auto& i : vec)
+		{
+			cct::Logger::Info("{}, ", i);
+		}
+	}
 	return EXIT_SUCCESS;
 }
 
