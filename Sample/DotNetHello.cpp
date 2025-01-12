@@ -68,12 +68,3 @@ int main()
 	}
 	return EXIT_SUCCESS;
 }
-
-
-//Fixme
-namespace cct
-{
-	void DotNetHello::Hello(const std::string& text)
-	{
-	}
-}
