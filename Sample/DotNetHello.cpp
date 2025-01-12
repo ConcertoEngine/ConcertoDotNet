@@ -23,8 +23,8 @@ int main()
 	std::string currentPath = std::filesystem::current_path().string();
 	cct::dotnet::HostFXR hostFxr(currentPath, "DotNetLib.runtimeconfig.json");
 
-	const cct::refl::Class* klass = cct::dotnet::DotNetLib::GetClass();
-	auto obj = klass->CreateDefaultObject<cct::dotnet::DotNetLib>();
+	const cct::refl::Class* klass = cct::dotnet::DotNetLibAssembly::GetClass();
+	auto obj = klass->CreateDefaultObject<cct::dotnet::DotNetLibAssembly>();
 	cct::Result<cct::Int32, std::string> res = hostFxr.LoadDotNetAssembly(*obj, "DotNetLib.dll", "DotNetLib");
 
 	if (res.IsError())
