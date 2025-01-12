@@ -58,8 +58,6 @@ namespace cct::dotnet
 			CCT_ASSERT_FALSE("ConcertoDotNet: Could not find hostfxr_get_dotnet_environment_info");
 			return "Could not find hostfxr_get_dotnet_environment_info"s;
 		}
-#if 0
-#else
 		auto callback = [](const struct hostfxr_dotnet_environment_info* info, void* hostFxr) -> void
 		{
 			HostFXR* host = static_cast<HostFXR*>(hostFxr);
@@ -92,7 +90,7 @@ namespace cct::dotnet
 			host->SetSdkPath(std::move(highestSdkPath));
 		};
 		hostfxrGetDotnetEnvironmentInfo(nullptr, nullptr, callback, this);
-#endif
+
 		InitializeHost();
 		return true;
 	}
@@ -191,8 +189,6 @@ namespace cct::dotnet
 			return std::format("ConcertoDotNet: could get runtime delegate for hdt_get_function_pointer (path '{}'), error code : {}", assemblyPath, result);
 		}
 		assembly._getFunctionPointer = reinterpret_cast<get_function_pointer_fn>(function);
-
-		CloseHost();
 
 		return {0};
 	}
